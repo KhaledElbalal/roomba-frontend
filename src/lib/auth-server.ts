@@ -8,9 +8,20 @@ function requireEnv(name: string): string {
   return val;
 }
 
-export const auth = createNeonAuth({
-  baseUrl: requireEnv("NEON_AUTH_BASE_URL"),
-  cookies: {
-    secret: requireEnv("NEON_AUTH_COOKIE_SECRET"),
-  },
-});
+// Lazily constructed so that `next build` (which imports this module while
+// collecting page data) does not require the runtime auth env vars. They are
+// only present at request time, injected by App Runner — never baked into the
+// image. The instance is memoised after the first request.
+let instance: ReturnType<typeof createNeonAuth> | undefined;
+
+export function getAuth() {
+  if (!instance) {
+    instance = createNeonAuth({
+      baseUrl: requireEnv("NEON_AUTH_BASE_URL"),
+      cookies: {
+        secret: requireEnv("NEON_AUTH_COOKIE_SECRET"),
+      },
+    });
+  }
+  return instance;
+}

@@ -2,6 +2,11 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { jwtVerify, SignJWT } from "jose";
 
+// Reads request-time cookies + runtime secrets, so it is always dynamic. The
+// directive also keeps `next build` from invoking this handler (and reading the
+// runtime env, which is injected by App Runner) during prerendering.
+export const dynamic = "force-dynamic";
+
 const enc = new TextEncoder();
 
 function requireEnv(name: string): Uint8Array {
@@ -10,10 +15,11 @@ function requireEnv(name: string): Uint8Array {
   return enc.encode(val);
 }
 
-const cookieSecret = requireEnv("NEON_AUTH_COOKIE_SECRET");
-const bridgeSecret = requireEnv("NEON_AUTH_BRIDGE_SECRET");
-
 export async function GET() {
+  // Read secrets at request time, not module load — see note above.
+  const cookieSecret = requireEnv("NEON_AUTH_COOKIE_SECRET");
+  const bridgeSecret = requireEnv("NEON_AUTH_BRIDGE_SECRET");
+
   const cookieStore = await cookies();
   const sessionDataCookie = cookieStore
     .getAll()
