@@ -1,0 +1,79 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.push.outputs.image }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push
+        id: push
+        env:
+          REG: ${{ steps.ecr.outputs.registry }}
+          TAG: ${{ github.sha }}
+          # Baked into the Next.js bundle at build time
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+        run: |
+          docker build \
+            --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
+            -t "$REG/roomba-frontend:$TAG" \
+            .
+          docker push "$REG/roomba-frontend:$TAG"
+          echo "image=$REG/roomba-frontend:$TAG" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Update App Runner image
+        env:
+          SERVICE_ARN: ${{ secrets.APPRUNNER_FRONTEND_SERVICE_ARN }}
+          IMAGE: ${{ needs.build.outputs.image }}
+        run: |
+          CURRENT=$(aws apprunner describe-service \
+            --service-arn "$SERVICE_ARN" \
+            --query Service.SourceConfiguration --output json)
+
+          aws apprunner update-service \
+            --service-arn "$SERVICE_ARN" \
+            --source-configuration "$(echo "$CURRENT" | jq \
+              --arg img "$IMAGE" \
+              '.ImageRepository.ImageIdentifier = $img')"
+
+          for i in $(seq 1 20); do
+            STATUS=$(aws apprunner describe-service \
+              --service-arn "$SERVICE_ARN" \
+              --query Service.Status --output text)
+            [ "$STATUS" = "RUNNING" ] && echo "Deployed successfully" && break
+            echo "  Status: $STATUS ($i/20) …"
+            sleep 30
+          done

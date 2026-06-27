@@ -1,0 +1,19 @@
+# Local development image for the Roomba frontend (Next.js).
+# docker-compose is expected to bind-mount the source and a node_modules volume;
+# this image just needs to install deps and run the dev server.
+FROM node:20-slim
+
+WORKDIR /app
+
+# Install dependencies first for better layer caching.
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Copy the rest of the source (compose overlays this with a bind mount in dev).
+COPY . .
+
+# Next.js dev server. The "dev" script binds 0.0.0.0:3001.
+EXPOSE 3001
+ENV NEXT_TELEMETRY_DISABLED=1
+
+CMD ["npm", "run", "dev"]
