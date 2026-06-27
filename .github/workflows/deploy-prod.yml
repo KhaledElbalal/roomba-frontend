@@ -56,9 +56,12 @@ jobs:
 
       - name: Deploy App Runner service
         env:
-          IMAGE:             ${{ needs.build.outputs.image }}
-          ACCESS_ROLE_ARN:   ${{ secrets.APPRUNNER_ACCESS_ROLE_ARN }}
-          INSTANCE_ROLE_ARN: ${{ secrets.APPRUNNER_INSTANCE_ROLE_ARN }}
+          IMAGE:                 ${{ needs.build.outputs.image }}
+          ACCESS_ROLE_ARN:       ${{ secrets.APPRUNNER_ACCESS_ROLE_ARN }}
+          INSTANCE_ROLE_ARN:     ${{ secrets.APPRUNNER_INSTANCE_ROLE_ARN }}
+          NEON_BASE_URL_ARN:     ${{ secrets.NEON_AUTH_BASE_URL_SECRET_ARN }}
+          NEON_COOKIE_ARN:       ${{ secrets.NEON_AUTH_COOKIE_SECRET_ARN }}
+          NEON_BRIDGE_ARN:       ${{ secrets.NEON_AUTH_BRIDGE_SECRET_ARN }}
         run: |
           set -euo pipefail
 
@@ -73,13 +76,23 @@ jobs:
             RESULT=$(aws apprunner create-service \
               --service-name "roomba-frontend-prod" \
               --source-configuration "$(jq -n \
-                --arg img  "$IMAGE" \
-                --arg role "$ACCESS_ROLE_ARN" \
+                --arg img        "$IMAGE" \
+                --arg role       "$ACCESS_ROLE_ARN" \
+                --arg base_url   "$NEON_BASE_URL_ARN" \
+                --arg cookie     "$NEON_COOKIE_ARN" \
+                --arg bridge     "$NEON_BRIDGE_ARN" \
                 '{
                   ImageRepository: {
                     ImageIdentifier: $img,
                     ImageRepositoryType: "ECR",
-                    ImageConfiguration: {Port: "3000"}
+                    ImageConfiguration: {
+                      Port: "3000",
+                      RuntimeEnvironmentSecrets: {
+                        NEON_AUTH_BASE_URL:      $base_url,
+                        NEON_AUTH_COOKIE_SECRET: $cookie,
+                        NEON_AUTH_BRIDGE_SECRET: $bridge
+                      }
+                    }
                   },
                   AuthenticationConfiguration: {AccessRoleArn: $role},
                   AutoDeploymentsEnabled: false
