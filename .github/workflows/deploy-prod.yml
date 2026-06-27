@@ -54,20 +54,51 @@ jobs:
           role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Update App Runner image
+      - name: Deploy App Runner service
         env:
-          SERVICE_ARN: ${{ secrets.APPRUNNER_FRONTEND_SERVICE_ARN }}
-          IMAGE: ${{ needs.build.outputs.image }}
+          IMAGE:             ${{ needs.build.outputs.image }}
+          ACCESS_ROLE_ARN:   ${{ secrets.APPRUNNER_ACCESS_ROLE_ARN }}
+          INSTANCE_ROLE_ARN: ${{ secrets.APPRUNNER_INSTANCE_ROLE_ARN }}
         run: |
-          CURRENT=$(aws apprunner describe-service \
-            --service-arn "$SERVICE_ARN" \
-            --query Service.SourceConfiguration --output json)
+          set -euo pipefail
 
-          aws apprunner update-service \
-            --service-arn "$SERVICE_ARN" \
-            --source-configuration "$(echo "$CURRENT" | jq \
-              --arg img "$IMAGE" \
-              '.ImageRepository.ImageIdentifier = $img')"
+          # Look up by name — works on first run (no ARN secret needed)
+          SERVICE_ARN=$(aws apprunner list-services \
+            --query "ServiceSummaryList[?ServiceName=='roomba-frontend-prod'].ServiceArn | [0]" \
+            --output text 2>/dev/null || echo "")
+          [ "$SERVICE_ARN" = "None" ] && SERVICE_ARN=""
+
+          if [ -z "$SERVICE_ARN" ]; then
+            echo "Creating frontend App Runner service for the first time …"
+            RESULT=$(aws apprunner create-service \
+              --service-name "roomba-frontend-prod" \
+              --source-configuration "$(jq -n \
+                --arg img  "$IMAGE" \
+                --arg role "$ACCESS_ROLE_ARN" \
+                '{
+                  ImageRepository: {
+                    ImageIdentifier: $img,
+                    ImageRepositoryType: "ECR",
+                    ImageConfiguration: {Port: "3000"}
+                  },
+                  AuthenticationConfiguration: {AccessRoleArn: $role},
+                  AutoDeploymentsEnabled: false
+                }')" \
+              --instance-configuration "InstanceRoleArn=${INSTANCE_ROLE_ARN}" \
+              --health-check-configuration Protocol=HTTP,Path=/")
+            SERVICE_ARN=$(echo "$RESULT" | jq -r '.Service.ServiceArn')
+            echo "Created: $SERVICE_ARN"
+          else
+            echo "Updating existing service …"
+            CURRENT=$(aws apprunner describe-service \
+              --service-arn "$SERVICE_ARN" \
+              --query Service.SourceConfiguration --output json)
+
+            aws apprunner update-service \
+              --service-arn "$SERVICE_ARN" \
+              --source-configuration "$(echo "$CURRENT" | jq \
+                --arg img "$IMAGE" '.ImageRepository.ImageIdentifier = $img')"
+          fi
 
           for i in $(seq 1 20); do
             STATUS=$(aws apprunner describe-service \
