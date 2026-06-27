@@ -98,7 +98,7 @@ jobs:
                   AutoDeploymentsEnabled: false
                 }')" \
               --instance-configuration "InstanceRoleArn=${INSTANCE_ROLE_ARN}" \
-              --health-check-configuration Protocol=HTTP,Path=/")
+              --health-check-configuration "Protocol=HTTP,Path=/")
             SERVICE_ARN=$(echo "$RESULT" | jq -r '.Service.ServiceArn')
             echo "Created: $SERVICE_ARN"
           else
