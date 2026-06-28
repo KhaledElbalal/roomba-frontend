@@ -4,6 +4,7 @@ import "./globals.css";
 import "@neondatabase/auth/ui/css";
 
 import { Providers } from "@/components/providers";
+import { QueryProvider } from "@/components/query-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +33,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
+        <Providers>
+          <QueryProvider>{children}</QueryProvider>
+        </Providers>
       </body>
     </html>
   );
