@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
 import { authClient } from "@/lib/auth";
@@ -47,14 +48,19 @@ export default function DashboardPage() {
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <Button
-          variant="outline"
-          onClick={() =>
-            authClient.signOut().then(() => router.replace("/"))
-          }
-        >
-          Sign out
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" render={<Link href="/settings/integrations" />}>
+            Integrations
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() =>
+              authClient.signOut().then(() => router.replace("/"))
+            }
+          >
+            Sign out
+          </Button>
+        </div>
       </div>
 
       <Card>

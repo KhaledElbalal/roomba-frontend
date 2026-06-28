@@ -120,6 +120,19 @@ export interface LinearTask {
 
 export type IntegrationProvider = "github" | "linear";
 
+/**
+ * `GET /api/integrations` / `POST /api/integrations` response item.
+ *
+ * The backend serializer (`IntegrationSerializer`) deliberately exposes only the
+ * provider and a connected flag — never the token, its secret ref, or metadata.
+ * This is the contract the integrations UI is built against; the fuller
+ * `Integration` shape below mirrors the DB row for endpoints that may expose it.
+ */
+export interface IntegrationStatus {
+  provider: IntegrationProvider;
+  connected: boolean;
+}
+
 export interface Integration {
   id: number;
   user_id: string;
