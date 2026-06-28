@@ -63,6 +63,7 @@ jobs:
           NEON_COOKIE_ARN:       ${{ secrets.NEON_AUTH_COOKIE_SECRET_ARN }}
           NEON_BRIDGE_ARN:       ${{ secrets.NEON_AUTH_BRIDGE_SECRET_ARN }}
           ROUTE53_ZONE_ID:       ${{ secrets.ROUTE53_ZONE_ID }}
+          SCALING_CONFIG_ARN:    ${{ secrets.SCALING_CONFIG_ARN }}
         run: |
           set -euo pipefail
 
@@ -124,6 +125,7 @@ jobs:
                   AutoDeploymentsEnabled: false
                 }')" \
               --instance-configuration "InstanceRoleArn=${INSTANCE_ROLE_ARN}" \
+              --auto-scaling-configuration-arn "${SCALING_CONFIG_ARN}" \
               --health-check-configuration "Protocol=HTTP,Path=/")
             SERVICE_ARN=$(echo "$RESULT" | jq -r '.Service.ServiceArn')
             echo "Created: $SERVICE_ARN"

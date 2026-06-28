@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 
 import { authClient } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
+import { queryKeys } from "@/lib/query-keys";
+import type { MeResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,17 +17,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-type ApiState =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "error"; message: string }
-  | { status: "success"; data: unknown };
-
 export default function DashboardPage() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const userId = session?.user?.id;
-  const [api, setApi] = useState<ApiState>({ status: "idle" });
 
   // Protect the route: redirect to sign-in once we know there's no session.
   useEffect(() => {
@@ -33,34 +29,11 @@ export default function DashboardPage() {
     }
   }, [isPending, session, router]);
 
-
-  useEffect(() => {
-    if (!userId) return;
-    let cancelled = false;
-
-    void (async () => {
-      setApi({ status: "loading" });
-      try {
-        const res = await apiFetch("/api/me");
-        if (!res.ok) {
-          throw new Error(`Backend responded ${res.status} ${res.statusText}`);
-        }
-        const data: unknown = await res.json();
-        if (!cancelled) setApi({ status: "success", data });
-      } catch (err: unknown) {
-        if (!cancelled) {
-          setApi({
-            status: "error",
-            message: err instanceof Error ? err.message : String(err),
-          });
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
+  const meQuery = useQuery({
+    queryKey: queryKeys.me,
+    queryFn: () => apiFetch<MeResponse>("/api/me"),
+    enabled: Boolean(userId),
+  });
 
   if (isPending || !session) {
     return (
@@ -107,13 +80,13 @@ export default function DashboardPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {api.status === "loading" || api.status === "idle" ? (
+          {meQuery.isPending ? (
             <p className="text-muted-foreground">Calling backend…</p>
-          ) : api.status === "error" ? (
-            <p className="text-destructive">Error: {api.message}</p>
+          ) : meQuery.isError ? (
+            <p className="text-destructive">Error: {meQuery.error.message}</p>
           ) : (
             <pre className="overflow-x-auto rounded-md bg-muted p-4 text-sm">
-              {JSON.stringify(api.data, null, 2)}
+              {JSON.stringify(meQuery.data, null, 2)}
             </pre>
           )}
         </CardContent>
