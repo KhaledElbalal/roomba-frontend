@@ -153,12 +153,9 @@ export interface Integration {
 
 export interface LlmProvider {
   id: number;
-  user_id: string;
   provider_name: string;
   base_url: string | null;
   available_models: string[] | null;
-  created_at: string;
-  updated_at: string;
 }
 
 // ---------------------------------------------------------------------------
