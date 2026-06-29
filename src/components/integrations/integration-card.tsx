@@ -225,7 +225,6 @@ export function IntegrationCard({
   );
 }
 
-/** Provider catalogue rendered on the integrations page (one card each). */
 export const PROVIDERS: ProviderConfig[] = [
   {
     provider: "github",
