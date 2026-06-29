@@ -41,6 +41,10 @@ export const queryKeys = {
 
   llmProviders: ["llm-providers"] as const,
 
+  linearIssues: ["linear-issues"] as const,
+
+  githubRepos: ["github-repos"] as const,
+
   metrics: {
     all: ["metrics"] as const,
     dora: (range: MetricsRange) => ["metrics", "dora", range] as const,
