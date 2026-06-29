@@ -161,41 +161,43 @@ export function IntegrationCard({
             )}
           </div>
         ) : (
-          <form className="flex flex-col gap-2" onSubmit={handleConnect}>
-            <label
-              htmlFor={`${config.provider}-token`}
-              className="text-sm font-medium"
-            >
-              {config.inputLabel}
-            </label>
-            <div className="flex gap-2">
-              <Input
-                id={`${config.provider}-token`}
-                type="password"
-                autoComplete="off"
-                spellCheck={false}
-                placeholder={config.placeholder}
-                value={token}
-                onChange={(event) => setToken(event.target.value)}
-                disabled={connect.isPending}
-                aria-invalid={connect.isError || undefined}
-              />
-              <Button
-                type="submit"
-                disabled={connect.isPending || token.trim().length === 0}
+          <form className="flex flex-col gap-3" onSubmit={handleConnect}>
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor={`${config.provider}-token`}
+                className="text-sm font-medium"
               >
-                {connect.isPending ? (
-                  <>
-                    <LoaderCircle className="animate-spin" aria-hidden />
-                    Connecting…
-                  </>
-                ) : (
-                  "Connect"
-                )}
-              </Button>
+                {config.inputLabel}
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  id={`${config.provider}-token`}
+                  type="password"
+                  autoComplete="off"
+                  spellCheck={false}
+                  placeholder={config.placeholder}
+                  value={token}
+                  onChange={(event) => setToken(event.target.value)}
+                  disabled={connect.isPending}
+                  aria-invalid={connect.isError || undefined}
+                />
+                <Button
+                  type="submit"
+                  disabled={connect.isPending || token.trim().length === 0}
+                >
+                  {connect.isPending ? (
+                    <>
+                      <LoaderCircle className="animate-spin" aria-hidden />
+                      Connecting…
+                    </>
+                  ) : (
+                    "Connect"
+                  )}
+                </Button>
+              </div>
             </div>
 
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs leading-relaxed text-muted-foreground">
               {config.scopeHint}{" "}
               <Link
                 href={config.tokenUrl}

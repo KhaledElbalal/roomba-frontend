@@ -1,24 +1,28 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "@neondatabase/auth/ui/css";
 
+import { spaceGrotesk, jetbrainsMono } from "./fonts";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Providers } from "@/components/providers";
 import { QueryProvider } from "@/components/query-provider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "Roomba",
-  description: "Roomba — Neon Auth proof-of-connectivity slice.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3001",
+  ),
+  title: "roomba",
+  description:
+    "Autonomous agents that close the loop — from a Linear issue to an isolated container.",
+  openGraph: {
+    images: ["/brand/social/roomba-og-1200x630.png"],
+  },
+  icons: {
+    icon: [
+      { url: "/brand/favicon/favicon.svg", type: "image/svg+xml" },
+      { url: "/brand/favicon/favicon-32.png", sizes: "32x32" },
+    ],
+    apple: "/brand/favicon/apple-touch-icon-180.png",
+  },
 };
 
 export default function RootLayout({
@@ -26,16 +30,19 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Roomba is dark-first: `dark` + the font variables live on <html>.
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`dark ${spaceGrotesk.variable} ${jetbrainsMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <Providers>
-          <QueryProvider>{children}</QueryProvider>
-        </Providers>
+        <ThemeProvider>
+          <Providers>
+            <QueryProvider>{children}</QueryProvider>
+          </Providers>
+        </ThemeProvider>
       </body>
     </html>
   );

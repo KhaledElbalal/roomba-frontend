@@ -10,7 +10,9 @@ export default async function AuthPage({
 
   return (
     <main className="flex flex-1 items-center justify-center p-6">
-      <AuthView pathname={pathname} redirectTo="/dashboard" />
+      <div className="w-full max-w-sm">
+        <AuthView pathname={pathname} redirectTo="/dashboard" />
+      </div>
     </main>
   );
 }

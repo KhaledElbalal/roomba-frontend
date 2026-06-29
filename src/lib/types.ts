@@ -18,7 +18,12 @@
 // Runs
 // ---------------------------------------------------------------------------
 
-export type RunStatus = "queued" | "running" | "succeeded" | "failed";
+export type RunStatus =
+  | "queued"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "timed_out";
 
 export interface Run {
   id: number;

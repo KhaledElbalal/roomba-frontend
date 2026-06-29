@@ -16,14 +16,16 @@ export default function Home() {
         <CardHeader>
           <CardTitle className="text-2xl">Roomba</CardTitle>
           <CardDescription>
-            End-to-end auth slice: sign in with Neon Auth, then call the Rails
-            backend with your session token.
+            Agents that close the loop — sign in with Neon Auth, connect GitHub
+            and Linear, and let Roomba do the work.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <Button render={<Link href="/auth/sign-in" />}>Sign in</Button>
-          <Button variant="outline" render={<Link href="/dashboard" />}>
-            Go to dashboard
+        <CardContent className="flex flex-col gap-2.5">
+          <Button asChild>
+            <Link href="/auth/sign-in">Sign in</Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/dashboard">Go to dashboard</Link>
           </Button>
         </CardContent>
       </Card>
