@@ -14,10 +14,6 @@
  *     raw secret; later serializers may omit them entirely.
  */
 
-// ---------------------------------------------------------------------------
-// Runs
-// ---------------------------------------------------------------------------
-
 export type RunStatus =
   | "queued"
   | "running"
@@ -67,10 +63,6 @@ export interface Run {
   deployed_at: string | null;
 }
 
-// ---------------------------------------------------------------------------
-// Artifacts
-// ---------------------------------------------------------------------------
-
 export type ArtifactType =
   | "thinking"
   | "read_file"
@@ -102,10 +94,6 @@ export interface Artifact {
   created_at: string;
 }
 
-// ---------------------------------------------------------------------------
-// Linear tasks
-// ---------------------------------------------------------------------------
-
 export type LinearTaskType = "feature" | "bugfix";
 
 export interface LinearTask {
@@ -118,10 +106,6 @@ export interface LinearTask {
   created_at: string;
   updated_at: string;
 }
-
-// ---------------------------------------------------------------------------
-// Integrations
-// ---------------------------------------------------------------------------
 
 export type IntegrationProvider = "github" | "linear";
 
@@ -147,9 +131,11 @@ export interface Integration {
   updated_at: string;
 }
 
-// ---------------------------------------------------------------------------
-// LLM providers
-// ---------------------------------------------------------------------------
+export interface GithubRepo {
+  full_name: string;
+  name: string;
+  private: boolean;
+}
 
 export interface LlmProvider {
   id: number;
@@ -157,10 +143,6 @@ export interface LlmProvider {
   base_url: string | null;
   available_models: string[] | null;
 }
-
-// ---------------------------------------------------------------------------
-// Metrics (derived; never stored). Mirror the `Metrics::*` query Hashes.
-// ---------------------------------------------------------------------------
 
 export type MetricsRange = "7d" | "30d" | "90d" | "month";
 
@@ -212,10 +194,6 @@ export interface TimeseriesMetrics {
   interval: TimeseriesInterval;
   points: TimeseriesPoint[];
 }
-
-// ---------------------------------------------------------------------------
-// Misc endpoints
-// ---------------------------------------------------------------------------
 
 /** `GET /api/me` */
 export interface MeResponse {
