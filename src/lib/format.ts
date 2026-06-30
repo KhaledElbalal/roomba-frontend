@@ -43,6 +43,25 @@ export function durationSeconds(
   return Math.max(0, (endMs - startMs) / 1000);
 }
 
+/**
+ * Relative timestamp for live timeline nodes: `just now`, `12s ago`, `5m ago`,
+ * `2h ago`, `3d ago`. Recomputed on each poll-driven re-render so a running
+ * run's nodes age in place. Pair with an absolute `title` for the exact time.
+ */
+export function formatRelativeTime(value: string | null | undefined): string {
+  if (!value) return "—";
+  const t = new Date(value).getTime();
+  if (Number.isNaN(t)) return "—";
+  const seconds = Math.max(0, Math.round((Date.now() - t) / 1000));
+  if (seconds < 5) return "just now";
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
 /** Compact local timestamp for table cells: `Jun 30, 14:02`. */
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return "—";

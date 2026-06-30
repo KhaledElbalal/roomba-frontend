@@ -15,6 +15,7 @@ import type {
   LinearTask,
   Paginated,
   Run,
+  RunDetail,
   RunListItem,
   RunStatus,
 } from "./types";
@@ -55,6 +56,27 @@ export function useRuns(
       return rows.some((r) => ACTIVE_STATUSES.has(r.status))
         ? POLL_INTERVAL_MS
         : false;
+    },
+  });
+}
+
+/**
+ * One run plus its ordered artifact timeline (`GET /api/runs/:id`). The detail
+ * endpoint inlines the full, unpaginated artifact stream, so this single query
+ * is the live source for both the header and the timeline — no second request to
+ * `/artifacts`, which would race the inlined copy while streaming.
+ *
+ * Same polling contract as the list (see `src/app/CLAUDE.md`): refetch every ~2s
+ * while the run is `queued`/`running` so new artifacts append live, and stop the
+ * moment it reaches a terminal status.
+ */
+export function useRun(id: number): UseQueryResult<RunDetail> {
+  return useQuery({
+    queryKey: queryKeys.runs.detail(id),
+    queryFn: () => apiFetch<RunDetail>(`/api/runs/${id}`),
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status && ACTIVE_STATUSES.has(status) ? POLL_INTERVAL_MS : false;
     },
   });
 }

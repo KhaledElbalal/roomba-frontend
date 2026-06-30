@@ -111,6 +111,15 @@ export interface RunListItem {
   linear_task: RunLinearTask | null;
 }
 
+/**
+ * `GET /api/runs/:id` — a single run with its ordered artifact timeline inlined
+ * (`RunSerializer.new(run, include_artifacts: true)`). Same shape as a list item
+ * plus the full, sequence-ordered `artifacts` array.
+ */
+export interface RunDetail extends RunListItem {
+  artifacts: Artifact[];
+}
+
 /** Envelope for paginated list endpoints, e.g. `GET /api/runs`. */
 export interface Paginated<T> {
   data: T[];
