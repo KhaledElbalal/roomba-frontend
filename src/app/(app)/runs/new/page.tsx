@@ -50,7 +50,9 @@ export default function NewRunPage() {
   const [repoOpen, setRepoOpen] = useState(false);
   const [providerOpen, setProviderOpen] = useState(false);
 
-  const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
+  const [selectedIssueCode, setSelectedIssueCode] = useState<string | null>(
+    null,
+  );
   const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
   const [selectedProviderId, setSelectedProviderId] = useState<number | null>(null);
 
@@ -112,7 +114,8 @@ export default function NewRunPage() {
 
   const issues = issuesQuery.data ?? [];
   const repos = reposQuery.data ?? [];
-  const selectedIssue = issues.find((i) => i.id === selectedIssueId) ?? null;
+  const selectedIssue =
+    issues.find((i) => i.code === selectedIssueCode) ?? null;
   const selectedProvider = providers.find((p) => p.id === selectedProviderId) ?? null;
 
   const costCeiling = Number.parseFloat(maxCostUsd) || 0;
@@ -120,7 +123,7 @@ export default function NewRunPage() {
   const timeoutSeconds = parseInt(maxWallClockSeconds, 10) || 0;
 
   const canSubmit =
-    selectedIssueId !== null &&
+    selectedIssue !== null &&
     selectedRepo !== null &&
     selectedProviderId !== null &&
     !createRun.isPending;
@@ -129,12 +132,12 @@ export default function NewRunPage() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!selectedIssueId || !selectedRepo || !selectedProviderId) return;
+    if (!selectedIssue || !selectedRepo || !selectedProviderId) return;
 
     createRun.mutate(
       {
         github_repo: selectedRepo,
-        linear_task_id: selectedIssueId,
+        linear_issue: selectedIssue,
         llm_provider_id: selectedProviderId,
         // Normalize to the same parsed value the GuardrailMeter displays so the
         // submitted bound is never out of sync with what the user authorized.
@@ -179,7 +182,7 @@ export default function NewRunPage() {
                   >
                     <span className="truncate">
                       {selectedIssue
-                        ? `${selectedIssue.code} — ${selectedIssue.name}`
+                        ? `${selectedIssue.code} — ${selectedIssue.title}`
                         : issuesQuery.isPending
                           ? "Loading issues…"
                           : "Select an issue…"}
@@ -195,17 +198,17 @@ export default function NewRunPage() {
                       <CommandGroup>
                         {issues.map((issue) => (
                           <CommandItem
-                            key={issue.id}
-                            value={`${issue.code} ${issue.name}`}
+                            key={issue.code}
+                            value={`${issue.code} ${issue.title}`}
                             onSelect={() => {
-                              setSelectedIssueId(issue.id);
+                              setSelectedIssueCode(issue.code);
                               setIssueOpen(false);
                             }}
                           >
                             <Check
                               className={cn(
                                 "mr-2 size-4 shrink-0",
-                                selectedIssueId === issue.id
+                                selectedIssueCode === issue.code
                                   ? "opacity-100"
                                   : "opacity-0",
                               )}
@@ -213,7 +216,7 @@ export default function NewRunPage() {
                             <span className="text-muted-foreground font-mono text-xs mr-2 shrink-0">
                               {issue.code}
                             </span>
-                            <span className="truncate">{issue.name}</span>
+                            <span className="truncate">{issue.title}</span>
                           </CommandItem>
                         ))}
                       </CommandGroup>

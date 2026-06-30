@@ -12,7 +12,7 @@ import { apiFetch, ApiError } from "./api";
 import { queryKeys, type RunFilters } from "./query-keys";
 import type {
   GithubRepo,
-  LinearTask,
+  LinearIssue,
   Paginated,
   Run,
   RunDetail,
@@ -81,10 +81,10 @@ export function useRun(id: number): UseQueryResult<RunDetail> {
   });
 }
 
-export function useLinearIssues(): UseQueryResult<LinearTask[]> {
+export function useLinearIssues(): UseQueryResult<LinearIssue[]> {
   return useQuery({
     queryKey: queryKeys.linearIssues,
-    queryFn: () => apiFetch<LinearTask[]>("/api/linear/issues"),
+    queryFn: () => apiFetch<LinearIssue[]>("/api/linear/issues"),
   });
 }
 
@@ -97,7 +97,9 @@ export function useGithubRepos(): UseQueryResult<GithubRepo[]> {
 
 export interface CreateRunVars {
   github_repo: string;
-  linear_task_id: number;
+  // The API requires the full issue (it upserts the cached task from these
+  // fields), not just an id — see RunsController#issue_params.
+  linear_issue: LinearIssue;
   llm_provider_id: number;
   max_iterations?: number;
   max_wall_clock_seconds?: number;

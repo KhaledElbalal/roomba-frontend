@@ -161,6 +161,21 @@ export interface Artifact {
 
 export type LinearTaskType = "feature" | "bugfix";
 
+/**
+ * A live Linear issue from the picker endpoint (`GET /api/linear/issues`), served
+ * straight from `ProviderProxy::LinearIssues` — NOT the cached `LinearTask` row.
+ * `id` is Linear's GraphQL UUID (a string), and the fields are the proxy's names
+ * (`title`/`type`, not `name`/`task_type`). This is exactly the object
+ * `POST /api/runs` expects back under `linear_issue`.
+ */
+export interface LinearIssue {
+  id: string;
+  code: string;
+  title: string;
+  description: string | null;
+  type: LinearTaskType;
+}
+
 export interface LinearTask {
   id: number;
   code: string;
