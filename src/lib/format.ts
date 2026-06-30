@@ -25,3 +25,33 @@ export function formatDuration(seconds: number | null | undefined): string {
 export function formatInt(value: number | null | undefined): string {
   return value == null ? "—" : value.toLocaleString();
 }
+
+/**
+ * Elapsed seconds between two ISO timestamps. When `end` is null/absent (a run
+ * still in flight) it counts to *now*, so a running row shows live elapsed time
+ * that advances on each poll. Returns null when there is no start yet.
+ */
+export function durationSeconds(
+  start: string | null | undefined,
+  end: string | null | undefined,
+): number | null {
+  if (!start) return null;
+  const startMs = new Date(start).getTime();
+  if (Number.isNaN(startMs)) return null;
+  const endMs = end ? new Date(end).getTime() : Date.now();
+  if (Number.isNaN(endMs)) return null;
+  return Math.max(0, (endMs - startMs) / 1000);
+}
+
+/** Compact local timestamp for table cells: `Jun 30, 14:02`. */
+export function formatDateTime(value: string | null | undefined): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

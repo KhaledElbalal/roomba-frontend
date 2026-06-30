@@ -25,6 +25,7 @@ import type {
 export interface RunFilters {
   status?: RunStatus;
   repo?: string;
+  page?: number;
 }
 
 export const queryKeys = {
