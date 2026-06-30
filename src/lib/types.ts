@@ -63,6 +63,62 @@ export interface Run {
   deployed_at: string | null;
 }
 
+/** Nested provider summary on a serialized run (`RunSerializer#provider_summary`). */
+export interface RunProviderSummary {
+  id: number;
+  provider_name: string;
+}
+
+/** Nested Linear task on a serialized run (`LinearTaskSerializer`). */
+export interface RunLinearTask {
+  id: number;
+  code: string;
+  name: string;
+  description: string | null;
+  task_type: LinearTaskType;
+  synced_at: string | null;
+}
+
+/**
+ * A run as the API actually serializes it (`RunSerializer`) — what `/api/runs`
+ * and `/api/runs/:id` return. This is NOT the raw `Run` row: secret-bearing and
+ * internal id-only columns are dropped, and the provider + Linear task are
+ * inlined as nested summaries instead of bare foreign keys.
+ */
+export interface RunListItem {
+  id: number;
+  status: RunStatus;
+  name: string | null;
+  description: string | null;
+  github_repo: string | null;
+  github_pr_url: string | null;
+  started_at: string | null;
+  finished_at: string | null;
+  deployed_at: string | null;
+  pr_opened_at: string | null;
+  cost_usd: string | null;
+  tokens_used: number | null;
+  user_rating: number | null;
+  changes_requested: boolean | null;
+  user_feedback: string | null;
+  failure_reason: string | null;
+  max_cost_usd: string | null;
+  max_iterations: number | null;
+  max_wall_clock_seconds: number | null;
+  created_at: string;
+  updated_at: string;
+  llm_provider: RunProviderSummary | null;
+  linear_task: RunLinearTask | null;
+}
+
+/** Envelope for paginated list endpoints, e.g. `GET /api/runs`. */
+export interface Paginated<T> {
+  data: T[];
+  page: number;
+  per_page: number;
+  total: number;
+}
+
 export type ArtifactType =
   | "thinking"
   | "read_file"
