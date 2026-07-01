@@ -1,0 +1,265 @@
+/* Marketing landing page — self-contained, terminal-flavored surface (ROO-27).
+   Scoped under `.roomba-landing` so its richer palette + motion never leak into
+   the product design system. Palette values mirror the Roomba brand hexes that
+   globals.css already maps to OKLCH tokens; here they're kept literal so this
+   page stays a single self-contained artifact matching the design source. */
+
+.roomba-landing {
+  --void: #070a10;
+  --ink: #0b0f18;
+  --surface2: #11161f;
+  --slate: #1b2230;
+  --border2: #222a39;
+  --blue: #4c8dff;
+  --blue-dim: #6fa6ff;
+  --signal: #9bc2ff;
+  --deep: #1e4fd1;
+  --paper: #e7ecf6;
+  --muted: #8b95a8;
+  --muteddim: #5c6679;
+  --green-fg: #4fd08c;
+  --amber: #e8b14c;
+  --danger: #ff5c6a;
+  --danger-fg: #ff7a85;
+
+  width: 100%;
+  background: var(--void);
+  color: var(--paper);
+  font-family: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* Clip the hero grid's intentional -48px bleed (and the footer signature mark)
+     so nothing forces a horizontal scrollbar below ~1180px. `clip` (not `hidden`)
+     does NOT create a scroll container, so the sticky nav + card shadows survive. */
+  overflow-x: clip;
+}
+
+.roomba-landing *,
+.roomba-landing *::before,
+.roomba-landing *::after {
+  box-sizing: border-box;
+}
+
+.roomba-landing ::selection {
+  background: rgba(76, 141, 255, 0.3);
+  color: #fff;
+}
+
+/* Fonts: mono for code / metadata / labels / all numerics. */
+.rl-mono {
+  font-family: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
+}
+
+@keyframes roomba-landing-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+@keyframes roomba-landing-cta-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgba(76, 141, 255, 0.4),
+      0 8px 24px rgba(76, 141, 255, 0.25),
+      0 0 0 0 rgba(76, 141, 255, 0);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(76, 141, 255, 0.7),
+      0 8px 24px rgba(76, 141, 255, 0.4),
+      0 0 0 7px rgba(76, 141, 255, 0.16);
+  }
+}
+/* Hero entrance is pure CSS (fill:both via JS) so the fold is never blank if JS is slow. */
+@keyframes roomba-landing-hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rl-pulse {
+  animation: roomba-landing-pulse 1.6s ease-in-out infinite;
+}
+
+/* Reveal / grow / trace base states — held hidden until JS reveals them, with a
+   reduced-motion + failsafe path so nothing stays hidden if JS is slow. */
+.roomba-landing [data-reveal] {
+  opacity: 0;
+  transform: translateY(22px);
+}
+.roomba-landing [data-grow] {
+  width: 0;
+}
+.roomba-landing [data-trace-row] {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .roomba-landing [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+  .roomba-landing [data-grow] {
+    width: var(--w);
+  }
+  .roomba-landing [data-hero] {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .roomba-landing [data-trace-row] {
+    opacity: 1 !important;
+  }
+}
+
+/* Hover / focus states (the design source expressed these as style-hover attrs). */
+.rl-navlink {
+  transition: color 0.25s ease;
+}
+.rl-navlink:hover {
+  color: var(--paper) !important;
+}
+.rl-btn-primary:hover {
+  background: #5c9aff !important;
+}
+.rl-btn-outline:hover {
+  border-color: var(--muted) !important;
+}
+.rl-footlink {
+  transition: color 0.2s ease;
+}
+.rl-footlink:hover {
+  color: var(--paper) !important;
+}
+.rl-cmd {
+  transition: opacity 0.2s ease;
+}
+.rl-cmd:hover {
+  opacity: 1;
+}
+.rl-email {
+  transition: border-color 0.2s ease;
+}
+.rl-email:focus {
+  border-color: var(--blue) !important;
+}
+.rl-run:hover {
+  background: #5c9aff !important;
+}
+
+/* Mobile hamburger menu — hidden on desktop, revealed ≤760px (see media query). */
+.rl-hamburger {
+  display: none;
+}
+.rl-hamburger:hover {
+  border-color: var(--muted) !important;
+}
+.rl-ic-close {
+  display: none;
+}
+.rl-hamburger[aria-expanded="true"] .rl-ic-menu {
+  display: none;
+}
+.rl-hamburger[aria-expanded="true"] .rl-ic-close {
+  display: block;
+}
+.rl-mobile-menu {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .roomba-landing [data-hero-grid] {
+    grid-template-columns: 1fr !important;
+    gap: 48px !important;
+  }
+  .roomba-landing [data-split-grid] {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+  .roomba-landing [data-split-grid] [data-split-visual] {
+    order: 2;
+  }
+  .roomba-landing [data-split-grid] [data-split-copy] {
+    order: 1;
+  }
+}
+@media (max-width: 860px) {
+  .roomba-landing [data-tele-grid] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .roomba-landing [data-iso-grid] {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+  }
+  .roomba-landing [data-footer-grid] {
+    grid-template-columns: 1fr !important;
+    gap: 40px !important;
+  }
+}
+@media (max-width: 760px) {
+  .roomba-landing [data-steps-grid] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .roomba-landing [data-steps-grid] [data-step]:nth-child(3) {
+    border-left: none !important;
+    border-top: 1px solid var(--slate) !important;
+  }
+  .roomba-landing [data-steps-grid] [data-step]:nth-child(4) {
+    border-top: 1px solid var(--slate) !important;
+  }
+  .roomba-landing [data-nav-links] {
+    display: none !important;
+  }
+  .roomba-landing .rl-header-actions {
+    display: none !important;
+  }
+  .roomba-landing .rl-hamburger {
+    display: inline-flex !important;
+  }
+  .roomba-landing .rl-mobile-menu[data-open="true"] {
+    display: flex !important;
+  }
+}
+@media (max-width: 620px) {
+  .roomba-landing [data-hero-visual] {
+    display: none !important;
+  }
+}
+/* Observability trace: on the smallest devices the fixed timeline-bar column makes
+   the row wider than the card, clipping the cost chip. Drop the timeline there so
+   the span label + per-call cost stay visible. */
+@media (max-width: 480px) {
+  .roomba-landing .rl-trace-grid {
+    grid-template-columns: 24px minmax(0, 1fr) auto !important;
+  }
+  .roomba-landing .rl-trace-timeline {
+    display: none !important;
+  }
+  /* The run title would truncate to a stray letter; status + id + total suffice here. */
+  .roomba-landing .rl-trace-title {
+    display: none !important;
+  }
+}
+@media (max-width: 560px) {
+  .roomba-landing [data-tele-grid] {
+    grid-template-columns: 1fr !important;
+  }
+  .roomba-landing [data-steps-grid] {
+    grid-template-columns: 1fr !important;
+  }
+  .roomba-landing [data-steps-grid] [data-step] {
+    border-left: none !important;
+    border-top: 1px solid var(--slate) !important;
+  }
+  .roomba-landing [data-steps-grid] [data-step]:first-child {
+    border-top: none !important;
+  }
+}
